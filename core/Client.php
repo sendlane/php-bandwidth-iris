@@ -37,31 +37,23 @@ abstract class iClient
     protected function xml2array($xml)
     {
         $arr = [];
-        foreach ($xml as $element)
-        {
+        foreach ($xml as $element) {
             $tag = $element->getName();
 
-            if ($element->count() > 0)
-            {
+            if ($element->count() > 0) {
                 $res = $element instanceof \SimpleXMLElement ? $this->xml2array($element) : get_object_vars($element);
-            }
-            else
-            {
+            } else {
                 $res = trim($element);
             }
 
-            if (isset($arr[$tag]))
-            {
-                if (!is_array($arr[$tag]) || $this->isAssoc($arr[$tag]))
-                {
+            if (isset($arr[$tag])) {
+                if (!is_array($arr[$tag]) || $this->isAssoc($arr[$tag])) {
                     $tmp = $arr[$tag];
                     $arr[$tag] = [];
                     $arr[$tag][] = $tmp;
                 }
                 $arr[$tag][] = $res;
-            }
-            else
-            {
+            } else {
                 $arr[$tag] = $res;
             }
 
@@ -80,40 +72,26 @@ abstract class iClient
     protected function array2xml($arr, &$xml)
     {
         /* snippet:  http://stackoverflow.com/questions/1397036/how-to-convert-array-to-simplexml */
-        foreach ($arr as $key => $value)
-        {
-            if (is_array($value) && $this->isAssoc($value))
-            {
-                if (!is_numeric($key))
-                {
+        foreach ($arr as $key => $value) {
+            if (is_array($value) && $this->isAssoc($value)) {
+                if (!is_numeric($key)) {
                     $subnode = $xml->addChild("$key");
                     $this->array2xml($value, $subnode);
-                }
-                else
-                {
+                } else {
                     $subnode = $xml->addChild("item$key");
                     $this->array2xml($value, $subnode);
                 }
-            }
-            else
-            {
-                if (is_array($value) && !$this->isAssoc($value))
-                {
-                    foreach ($value as $item)
-                    {
-                        if (is_array($item))
-                        {
+            } else {
+                if (is_array($value) && !$this->isAssoc($value)) {
+                    foreach ($value as $item) {
+                        if (is_array($item)) {
                             $subnode = $xml->addChild("$key");
                             $this->array2xml($item, $subnode);
-                        }
-                        else
-                        {
+                        } else {
                             $xml->addChild("$key", htmlspecialchars("$item"));
                         }
                     }
-                }
-                else
-                {
+                } else {
                     $xml->addChild("$key", htmlspecialchars("$value"));
                 }
             }
@@ -125,14 +103,14 @@ final class Client extends iClient
 {
 
     /**
-     * Store the last response body string 
+     * Store the last response body string
      */
     protected $lastResponseBody = null;
+    protected $client = null;
 
     public function __construct($login, $password, $options = [])
     {
-        if (empty($login) || empty($password))
-        {
+        if (empty($login) || empty($password)) {
             throw new \Exception("Provide login, password");
         }
 
@@ -141,14 +119,14 @@ final class Client extends iClient
         unset($options['url']);
         $options['base_uri'] = rtrim($options['base_uri'], '/') . '/';
 
-        $client_options = array();
-        if(isset($options['handler'])) {
+        $client_options = [];
+        if (isset($options['handler'])) {
             $client_options['handler'] = $options['handler'];
         }
 
-        $options['headers'] = array(
+        $options['headers'] = [
             'User-Agent' => 'PHP-Bandwidth-Iris'
-        );
+        ];
 
         $this->client = new \GuzzleHttp\Client($options);
     }
@@ -157,7 +135,7 @@ final class Client extends iClient
      * Wrapper method for GET request
      *
      * @param string $url
-     * @param array  $options
+     * @param array $options
      *
      * @return array
      * @throws ResponseException
@@ -172,7 +150,7 @@ final class Client extends iClient
      *
      * @param string $url
      * @param string $baseNode
-     * @param array  $data
+     * @param array $data
      *
      * @return array
      * @throws ResponseException
@@ -180,7 +158,7 @@ final class Client extends iClient
     public function post($url, $baseNode, $data)
     {
         $options = [
-            'body'    => $this->prepareXmlBody($data, $baseNode),
+            'body' => $this->prepareXmlBody($data, $baseNode),
             'headers' => ['Content-Type' => 'application/xml']
         ];
         return $this->request('post', $url, $options);
@@ -191,7 +169,7 @@ final class Client extends iClient
      *
      * @param string $url
      * @param string $baseNode
-     * @param array  $data
+     * @param array $data
      *
      * @return array
      * @throws ResponseException
@@ -199,7 +177,7 @@ final class Client extends iClient
     public function put($url, $baseNode, $data)
     {
         $options = [
-            'body'    => $this->prepareXmlBody($data, $baseNode),
+            'body' => $this->prepareXmlBody($data, $baseNode),
             'headers' => ['Content-Type' => 'application/xml']
 
         ];
@@ -222,7 +200,7 @@ final class Client extends iClient
      *
      * @param string $url
      * @param string $content
-     * @param array  $headers
+     * @param array $headers
      *
      * @return mixed|string
      * @throws ResponseException
@@ -230,13 +208,12 @@ final class Client extends iClient
     public function raw_file_post($url, $content, $headers = [])
     {
         $options = [
-            'body'    => $content,
+            'body' => $content,
             'headers' => $headers
         ];
         $response = $this->request('post', $url, $options, false);
 
-        if ($response->hasHeader('Location'))
-        {
+        if ($response->hasHeader('Location')) {
             $header = $response->getHeader('Location');
             return reset($header);
         }
@@ -248,7 +225,7 @@ final class Client extends iClient
      *
      * @param string $url
      * @param string $content
-     * @param array  $headers
+     * @param array $headers
      *
      * @return mixed|string
      * @throws ResponseException
@@ -256,13 +233,12 @@ final class Client extends iClient
     public function raw_file_put($url, $content, $headers = [])
     {
         $options = [
-            'body'    => $content,
+            'body' => $content,
             'headers' => $headers
         ];
         $response = $this->request('put', $url, $options, false);
 
-        if ($response->hasHeader('Location'))
-        {
+        if ($response->hasHeader('Location')) {
             return reset($response->getHeader('Location'));
         }
         return '';
@@ -273,7 +249,7 @@ final class Client extends iClient
      *
      * @param string $method
      * @param string $url
-     * @param array  $options
+     * @param array $options
      *
      * @return \GuzzleHttp\Psr7\Stream|array
      * @throws ResponseException
@@ -281,17 +257,13 @@ final class Client extends iClient
     public function request($method, $url, $options = [], $parse = true)
     {
         $this->lastResponseBody = null;
-        try
-        {
+        try {
             $response = $this->client->request($method, ltrim($url, '/'), $options);
-            if (!$parse)
-            {
+            if (!$parse) {
                 return $response;
             }
             return $this->parseResponse($response);
-        }
-        catch (ClientException $e)
-        {
+        } catch (ClientException $e) {
             $this->parseExceptionResponse($e);
         }
     }
@@ -300,7 +272,8 @@ final class Client extends iClient
      * Returns the XML string received in the last response.
      * @return string $lastResponseBody
      */
-    public function getLastResponseBody() {
+    public function getLastResponseBody()
+    {
         return $this->lastResponseBody;
     }
 
@@ -315,12 +288,9 @@ final class Client extends iClient
     private function prepareXmlBody($data, $baseNode)
     {
         $xml = new SimpleXMLElement(sprintf('<%s/>', $baseNode));
-        if (is_string($data))
-        {
+        if (is_string($data)) {
             $xml[0] = $data;
-        }
-        else
-        {
+        } else {
             $this->array2xml($data, $xml);
         }
 
@@ -338,8 +308,7 @@ final class Client extends iClient
     {
         $result = [];
 
-        if ($response->hasHeader('Location'))
-        {
+        if ($response->hasHeader('Location')) {
             $location = $response->getHeader('Location');
             $result['Location'] = reset($location);
             unset($location);
@@ -348,32 +317,26 @@ final class Client extends iClient
         $contentType = $response->getHeader('Content-Type');
         $contentType = reset($contentType);
 
-        if ($contentType && strpos($contentType, 'zip') !== false)
-        {
+        if ($contentType && strpos($contentType, 'zip') !== false) {
             return $response->getBody();
         }
 
         $responseBody = (string) $response->getBody();
         $this->lastResponseBody = $responseBody;
 
-        if (!$responseBody)
-        {
+        if (!$responseBody) {
             return $result;
         }
 
-        if ($contentType && strpos($contentType, 'json') !== false)
-        {
+        if ($contentType && strpos($contentType, 'json') !== false) {
             return json_decode($responseBody, true);
         }
 
-        try
-        {
+        try {
             $xml = new SimpleXMLElement($responseBody);
             $responseBody = $this->xml2array($xml);
             unset($xml);
-        }
-        catch (Exception $e)
-        {
+        } catch (Exception $e) {
         }
 
         return array_replace($result, $responseBody);
@@ -391,8 +354,7 @@ final class Client extends iClient
 
         if (isset($doc) &&
             isset($doc->ResponseStatus) &&
-            isset($doc->ResponseStatus->Description))
-        {
+            isset($doc->ResponseStatus->Description)) {
             throw new ResponseException(
                 (string) $doc->ResponseStatus->Description,
                 (int) $doc->ResponseStatus->ErrorCode
@@ -402,8 +364,7 @@ final class Client extends iClient
         if (isset($doc) &&
             isset($doc->Error) &&
             isset($doc->Error->Description) &&
-            isset($doc->Error->Code))
-        {
+            isset($doc->Error->Code)) {
             throw new ResponseException(
                 (string) $doc->Error->Description,
                 (int) $doc->Error->Code
@@ -413,8 +374,7 @@ final class Client extends iClient
         if (isset($doc) &&
             isset($doc->Errors) &&
             isset($doc->Errors->Description) &&
-            isset($doc->Errors->Code))
-        {
+            isset($doc->Errors->Code)) {
             throw new ResponseException(
                 (string) $doc->Errors->Description,
                 (int) $doc->Errors->Code

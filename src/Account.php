@@ -3,6 +3,8 @@
 namespace Iris;
 
 class Account extends RestEntry {
+
+    protected  $account_id;
     public function __construct($account_id, $client=Null, $namespace='accounts')
     {
         parent::_init($client, $namespace);
@@ -368,7 +370,7 @@ class Account extends RestEntry {
     public function createCsrOrder(Csr $order) {
         $url = sprintf('%s/%s', $this->account_id, 'csrs');
         $data = parent::post($url, 'Csr', $order->to_array());
-        return new CsrResponse($data);  
+        return new CsrResponse($data);
     }
 
     public function getCsrOrder($id) {
@@ -489,7 +491,7 @@ class Account extends RestEntry {
         $url = sprintf('%s/%s/%s', $this->account_id, 'emergencyNotificationRecipients', $id);
         parent::_delete($url);
     }
-    
+
     public function getApplications() {
         $url = sprintf('%s/%s', $this->account_id, 'applications');
         $data = parent::_get($url);
@@ -500,7 +502,7 @@ class Account extends RestEntry {
             return [$response];
         }
     }
-    
+
     public function getApplication($id) {
         $url = sprintf('%s/%s/%s', $this->account_id, 'applications', $id);
         $data = parent::_get($url);

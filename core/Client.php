@@ -40,11 +40,10 @@ abstract class iClient
         foreach ($xml as $element)
         {
             $tag = $element->getName();
-            $e = get_object_vars($element);
 
             if ($element->count() > 0)
             {
-                $res = $element instanceof \SimpleXMLElement ? $this->xml2array($element) : $e;
+                $res = $element instanceof \SimpleXMLElement ? $this->xml2array($element) : get_object_vars($element);
             }
             else
             {

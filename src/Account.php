@@ -2,18 +2,20 @@
 
 namespace Iris;
 
-class Account extends RestEntry {
+class Account extends RestEntry
+{
+    protected $account_id;
 
-    protected  $account_id;
-    public function __construct($account_id, $client=Null, $namespace='accounts')
+    public function __construct($account_id, $client = null, $namespace = 'accounts')
     {
         parent::_init($client, $namespace);
         $this->account_id = $account_id;
         $this->client = $client;
     }
 
-    public function tnoptions() {
-        if(!isset($this->tnoptions))
+    public function tnoptions()
+    {
+        if (!isset($this->tnoptions))
             $this->tnoptions = new TnOptions($this);
         return $this->tnoptions;
     }
